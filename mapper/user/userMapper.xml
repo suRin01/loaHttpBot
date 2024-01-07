@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="user">  
+    <select id="selectAllUser">
+        SELECT
+        *
+        FROM
+        cmmu_db.member 
+    </select>
+    
+    <select id="selectSomeUser">
+        SELECT
+        *
+        FROM
+        cmmu_db.member
+        <where>
+            <if test="userIdx != null and userIdx != ''">
+                and user_idx = #{userIdx}
+            </if>
+        </where>
+    </select>
+
+
+    <inser id="insertUser">
+        INSERT INTO cmmu_db.member (
+            user_name,
+            name,
+            password,
+            sex_dstn_code,
+            mobile_phone,
+            profile_img
+        ) VALUES (
+            #{user_name},
+            #{name},
+            #{password},
+            #{sex_dstn_code},
+            #{mobile_phone},
+            #{profile_img}
+        )
+    </insert>
+</mapper>
