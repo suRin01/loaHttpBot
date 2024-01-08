@@ -14,7 +14,7 @@ class DbPool {
                 host: process.env.DB_HOST, 
                 port: Number(process.env.DB_PORT), 
                 user: process.env.DB_ID, 
-                password: process.env.DB_PW, 
+                password: process.env.DB_PW,
                 connectionLimit: 5
             })
         }

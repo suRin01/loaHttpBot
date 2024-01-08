@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Param, Query, Body, Render } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, Render, UseGuards } from '@nestjs/common';
 import { User } from '../model/User';
 import { UserService } from '../service/UserService';
 import { searchQuery2Obj } from 'src/utility/UrlUtil';
+import { AccessJwtAuthGuard } from 'src/auth/service/auth.guard';
 
 @Controller('user')
 export class UserContoller {
@@ -10,6 +11,7 @@ export class UserContoller {
     ){}
 
 
+    @UseGuards(AccessJwtAuthGuard)
     @Get("")
     async lookupUser(@Query() urlQuery): Promise<User[]>{
         const userList = await this.userService.findSome(searchQuery2Obj<User>(urlQuery));

@@ -2,7 +2,6 @@ import { pool } from "./DbPool";
 import * as MybatisMapper from "mybatis-mapper";
 import * as fs from 'node:fs/promises';
 import { entity2Dto } from "./Entity2Dto";
-import { Session } from "node:inspector";
 
 
 class Tsbatis{
@@ -14,14 +13,13 @@ class Tsbatis{
     }
 
     private async init(){
-        const fileList = await fs.readdir(`${process.env["INIT_CWD"]}/mapper`, {recursive: true});
+        const fileList = await fs.readdir(`${process.env["INIT_CWD"]}/mapper`);
         const xmlFileList = fileList.map((filename)=>{
             if(filename.endsWith(".xml")){
+                console.log(`mapper ${filename} added.`)
                 return `${process.env["INIT_CWD"]}/mapper/${filename}`
             }
-        }).filter(fileName=>{if(fileName !== undefined) return fileName})
-        console.log("mapper file list");
-        console.log(xmlFileList);
+        }).filter(fileName=>{if(fileName !== undefined) return fileName});
         MybatisMapper.createMapper(xmlFileList);
         this.myBatisMapperActiveFlag = true;
 
@@ -44,7 +42,11 @@ class Tsbatis{
         const data = await connection.execute(query);
 
         await connection.release();
+        if(isNaN(data)){
+            console.log(data);
 
+            return 0;
+        }
         return 1;
     }
 }

@@ -20,6 +20,15 @@
         </where>
     </select>
 
+    <select id="selectUserByUsername">
+        SELECT
+        *
+        FROM
+        cmmu_db.member
+        <where>
+            user_name = #{username}
+        </where>
+    </select>
 
     <inser id="insertUser">
         INSERT INTO cmmu_db.member (

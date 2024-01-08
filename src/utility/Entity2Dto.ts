@@ -18,7 +18,8 @@ export const entity2Dto = <T>(entities:any):T[]=>{
         })
 
         return entityArray;
+    }else{
+        throw new Error("might be no data?")
     }
-
-    return singleEntity2Dto(entities);
+    
 }
