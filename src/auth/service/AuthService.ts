@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { jwtToken } from '../model/jwtToken'; 
 import { ConfigService } from '@nestjs/config';
 import { pbkdf2Sync } from 'crypto';
+import { User } from 'src/user/model/User';
 
 
 @Injectable()
@@ -15,7 +16,7 @@ export class AuthService {
     ) { }
 
     async signIn(username: string, pass: string): Promise<jwtToken> {
-        const user = await this.userService.findByUsername(username);
+        const user = await this.userService.findSome({user_name: username} as User)[0];
         const salt: string = this.configService.get("PBKDF2_SALT");
 
         if (pbkdf2Sync(pass, salt, 10000, 64, "sha512").toString("hex") !== user.password) {    
@@ -40,7 +41,7 @@ export class AuthService {
     }
 
     async refreshAccessToken(username: string): Promise<string>{
-        const user = await this.userService.findByUsername(username);
+        const user = await this.userService.findSome({user_name: username} as User)[0];
         const payload = {
             idx: user.user_idx,
             username: user.user_name,

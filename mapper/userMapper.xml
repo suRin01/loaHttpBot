@@ -30,7 +30,8 @@
         </where>
     </select>
 
-    <inser id="insertUser">
+
+    <insert id="insertUser">
         INSERT INTO cmmu_db.member (
             user_name,
             name,

@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Param, Query, Body, Render, UseGuards } from '@nestjs/common';
 import { User } from '../model/User';
 import { UserService } from '../service/UserService';
-import { searchQuery2Obj } from 'src/utility/UrlUtil';
+import { searchQuery2Obj } from 'src/utility/RequestUtil';
 import { AccessJwtAuthGuard } from 'src/auth/service/auth.guard';
+import { GuildGuard } from 'src/decorator/role.decorator';
 
 @Controller('user')
 export class UserContoller {
@@ -11,10 +12,11 @@ export class UserContoller {
     ){}
 
 
+    @UseGuards(GuildGuard)
     @UseGuards(AccessJwtAuthGuard)
     @Get("")
     async lookupUser(@Query() urlQuery): Promise<User[]>{
-        const userList = await this.userService.findSome(searchQuery2Obj<User>(urlQuery));
+        const userList = await this.userService.findSome(urlQuery);
 
         return userList;
     }
@@ -37,7 +39,9 @@ export class UserContoller {
     @Post("")
     async inserNewUser(@Body() newUser: User){
         console.log(newUser);
+        const data = this.userService.insertUser(newUser)
 
+        return "done"
 
     }
 

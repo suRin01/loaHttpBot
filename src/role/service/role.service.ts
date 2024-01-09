@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { role, role_relation} from "../model/RoleModel"
-import { tsbatis } from "src/utility/tsbatis";
+import { tsbatis } from "src/utility/Tsbatis";
 
 @Injectable()
 export class RoleService {

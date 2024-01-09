@@ -25,7 +25,7 @@ export class AccessJwtAuthGuard implements CanActivate {
 
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
-        console.log(request.headers.cookie);
+        
         const secret: string = this.configService.get("JWT_TOKEN");
 
         if (!token) {
