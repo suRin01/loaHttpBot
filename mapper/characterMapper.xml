@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="character">
+    <select id="selectLatestCharacter">
+        select * from cmmu_db.character
+        where name = #{name} 
+            and insert_dt = (select max(insert_dt) from cmmu_db.character ch where ch.name = #{name})
+    </select>
+    <select id="selectArmorData">
+        select * from cmmu_db.armor
+            where character_idx = #{characteridx}
+    </select>
+    </select id="selectElixirData">
+        select * from cmmu_db.elixir
+            where armor_idx = #{armorIdx}
+    </select>
+    <select id="selectTranscendData">
+        select * from cmmu_db.transcend
+            where armor_idx = #{armorIdx}
+    </select>
+    
+    
+    <insert id="insertCharacter">
+        INSERT INTO cmmu_db.member (
+            user_idx,
+            guild_idx,
+            name,
+            is_main_character,
+            class,
+            item_level,
+            server,
+            expedition_level,
+            pvp_grade_name,
+            town_level,
+            town_name,
+            toal_skill_points,
+            using_skill_points
+        ) VALUES (
+            #{userIdx},
+            #{guildIdx},
+            #{name},
+            #{isMainCharacter},
+            #{class},
+            #{itemlevel},
+            #{server},
+            #{expeditionLevel},
+            #{pvpGradeName},
+            #{townLevel},
+            #{townName},
+            #{toalSkill_points},
+            #{usingSkill_points}
+        )
+    </insert>
+    <insert id="insertArchivement">
+        INSERT INTO cmmu_db.archivement (
+            character_idx,
+            archive_code,
+            max_val,
+            current_val
+        ) VALUES (
+            #{characterIdx},
+            #{archive_code},
+            #{maxVal},
+            #{currentVal}
+        )
+    </insert>
+    <insert id="insertStat">
+        INSERT INTO cmmu_db.stat (
+            character_idx,
+            stat_code,
+            value,
+            addtional_value
+        ) VALUES (
+            #{characterIdx},
+            #{statCode},
+            #{value},
+            #{addtionalValue}
+        )
+    </insert>
+    
+    <insert id="insertArmor">
+        INSERT INTO cmmu_db.armor (
+            character_idx,
+            name,
+            level,
+            img_idx,
+            equip_code,
+            set_level
+        ) VALUES (
+            ${characterIdx},
+            ${name},
+            ${level},
+            ${imgIdx},
+            ${equipCode},
+            ${setLevel}
+        )
+    </insert>
+    
+    <insert id="insertElixir">
+        INSERT INTO cmmu_db.elixir (
+            armor_idx,
+            name,
+            effect
+        ) VALUES (
+            ${armorIdx},
+            ${name},
+            ${effect}
+        )
+    </insert>
+    
+    <insert id="insertTranscend">
+        INSERT INTO cmmu_db.transcend (
+            armor_idx;
+            stage,
+            sum
+        ) VALUES (
+            #{armorIdx}
+            #{stage},
+            #{sum}
+        )
+    </insert>
+
+</mapper>

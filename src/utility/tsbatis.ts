@@ -1,7 +1,7 @@
 import { pool } from "./DbPool";
 import * as MybatisMapper from "mybatis-mapper";
 import * as fs from 'node:fs/promises';
-import { entity2Dto } from "./Entity2Dto";
+import { convertObjectPropertiesSnakeCaseToCamelCase, entity2Dto } from "./Entity2Dto";
 import { SqlError } from "mariadb";
 
 
@@ -31,10 +31,14 @@ class Tsbatis{
         const query = MybatisMapper.getStatement(namespace, id, param);
         console.log(query)
         const data = await connection.execute(query);
-
+        let resultArr = [];
+        data.forEach(node => {
+            resultArr.push(convertObjectPropertiesSnakeCaseToCamelCase(node))
+        });
+        
         await connection.release();
 
-        return entity2Dto<T>(data);
+        return entity2Dto<T>(resultArr);
     }
 
 

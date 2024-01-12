@@ -15,10 +15,8 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
 	@Post("/login")
 	async getUserAll(@Body() signInDto: Record<string, any>, @Response() res): Promise<void> {
-		console.log(signInDto);
 		const token:jwtToken= await this.authService.signIn(signInDto.id, signInDto.password)
 		
-		console.log(token);
 		res.setHeader('Authorization', 'Bearer '+token.access_token);
 		res.cookie('access_token',token.access_token,{
 			httpOnly: true,

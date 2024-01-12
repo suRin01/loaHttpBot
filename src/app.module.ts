@@ -1,14 +1,18 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/module/UserModule';
+import { MemberModule } from './member/module/MemberModule';
 import { LoggerMiddleware } from './utility/LoggerMiddleware';
-import { UserContoller } from './user/controller/UserController';
+import { MemberContoller } from './member/controller/MemberController';
 import { CodeModule } from './code/module/CodeModule';
 import { AuthModule } from './auth/module/AuthModule';
+import { CharacterModule } from './character/module/CharacterModule';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UserModule, CodeModule, AuthModule],
+  imports: [MemberModule, CodeModule, AuthModule, CharacterModule, ConfigModule.forRoot({
+    isGlobal: true,
+  })],
   controllers: [AppController],
   providers: [AppService],
   
@@ -16,7 +20,7 @@ import { AuthModule } from './auth/module/AuthModule';
 export class AppModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware)
-    .forRoutes(UserContoller);
+    .forRoutes(MemberContoller);
   }
   
 }

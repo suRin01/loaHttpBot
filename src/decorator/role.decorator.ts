@@ -1,23 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException, UseGuards, applyDecorators } from "@nestjs/common";
 import { AccessJwtAuthGuard } from "src/auth/service/auth.guard";
-import { UserService } from "src/user/service/UserService";
+import { MemberService } from "src/member/service/MemberService";
 import { extractTokenFromHeader } from "src/utility/RequestUtil";
-
-export function hasRole(...roles:string[]) {
-    console.log("has role annotaion");
-    console.log(roles);
-    return applyDecorators(
-        SetMetadata('roles', roles),
-        UseGuards(AccessJwtAuthGuard)
-
-    )
-}
 
 
 @Injectable()
 export class RoleGuard implements CanActivate{
     constructor(
-        private userService: UserService
+        private userService: MemberService
     ){}
 
     canActivate(context: ExecutionContext) {
@@ -42,7 +32,7 @@ export class RoleGuard implements CanActivate{
 @Injectable()
 export class GuildGuard implements CanActivate{
     constructor(
-        private userService: UserService
+        private userService: MemberService
     ){}
 
     canActivate(context: ExecutionContext) {
