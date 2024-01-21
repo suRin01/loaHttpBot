@@ -108,21 +108,6 @@ export type crawled_character = {
 }
 
 /**
- * Model file
- * 
- */
-export type file = {
-    file_idx: number
-    file_name: string
-    file_extension: string
-    file_path: string
-    input_id: string
-    input_dt: Date
-    update_id: string | null
-    update_dt: Date | null
-}
-
-/**
  * Model guild
  * 
  */

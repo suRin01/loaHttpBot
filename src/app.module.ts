@@ -8,11 +8,12 @@ import { CodeModule } from './code/module/CodeModule';
 import { AuthModule } from './auth/module/AuthModule';
 import { CharacterModule } from './character/module/CharacterModule';
 import { ConfigModule } from '@nestjs/config';
+import { FileeModule } from './file/module/FileModule';
 
 @Module({
   imports: [MemberModule, CodeModule, AuthModule, CharacterModule, ConfigModule.forRoot({
     isGlobal: true,
-  })],
+  }), CodeModule, FileeModule],
   controllers: [AppController],
   providers: [AppService],
   

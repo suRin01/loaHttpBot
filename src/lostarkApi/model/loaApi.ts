@@ -269,8 +269,8 @@ export interface Profile {
     UsingSkillPoint	    :	number;
     TotalSkillPoint	    :	number;
     CharacterLevel	    :	number;
-    ItemAvgLevel	    :	number;
-    ItemMaxLevel	    :	number;
+    ItemAvgLevel	    :	string;
+    ItemMaxLevel	    :	string;
 
 }
 interface TypeValueWithMaxpoint extends TypeValue {

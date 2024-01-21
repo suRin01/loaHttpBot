@@ -24,7 +24,7 @@ export class CharacterController {
             const dbCharacterData = await this.characterService.getCharacterDbData(characterName);
 
             //if searched data is proceded within 3min(180s), return cached Data.
-            if(dbCharacterData.length !== 0 || (new Date().getTime()/1000 - dbCharacterData[0]?.insertDt.getTime()/1000) < 5 * 60){
+            if(dbCharacterData.length !== 0 && (new Date().getTime()/1000 - dbCharacterData[0]?.insertDt.getTime()/1000) < 5 * 60){
                 //search detail information
                 const responseData = dbCharacterData[0];
                 //search armor Data 
@@ -43,10 +43,6 @@ export class CharacterController {
                 return new ResponseBuilder<Character>()
                 .setBody(responseData)
                 .build();
-
-
-
-
             }
 
             //else, lookup character data and cache in db.

@@ -41,15 +41,18 @@ class Tsbatis{
         return entity2Dto<T>(resultArr);
     }
 
-
-    public async insert<T>(namespace: string, id:string, param:T):Promise<Number>{
+    
+    
+    public async insert<T>(namespace: string, id:string, param:T):Promise<number>{
         const connection = await pool.getConnection();
         const query = MybatisMapper.getStatement(namespace, id, param as {});
-        let result;
+        let result:OkPacket;
         try {
-            result = await connection.execute(query);
+            result = await connection.execute<OkPacket>(query);
+            
         } catch (error) {
             if(error instanceof SqlError){
+                console.log(error)
                 console.log("sql error!")
             }else{
             }
@@ -58,14 +61,14 @@ class Tsbatis{
         }finally{
             await connection.release();
         }
-
-        if(isNaN(result)){
-            console.log(result);
-
-            return 0;
-        }
-        return 1;
+        return result.insertId;
     }
+}
+
+interface OkPacket {
+    affectedRows: number;
+    insertId: number;
+    warningStatus: number;
 }
 
 

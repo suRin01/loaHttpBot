@@ -4,8 +4,8 @@ import {
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { extractTokenFromHeader } from 'src/utility/RequestUtil';
 
