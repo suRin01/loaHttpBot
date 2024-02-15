@@ -5,6 +5,8 @@ import { RestResponse } from 'src/utility/model/ResponseModel';
 import { CharacterInfo } from '../../lostarkApi/model/loaApi';
 import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 import { Armor, Character } from '../model/Character';
+import { Collection, MongoClient } from 'mongodb';
+import { mongoPool } from 'src/utility/MongoPool';
 
 @Controller('character')
 export class CharacterController {
@@ -22,22 +24,11 @@ export class CharacterController {
         try {
             //check previous chracater search data
             const dbCharacterData = await this.characterService.getCharacterDbData(characterName);
-
+            console.log(dbCharacterData);
             //if searched data is proceded within 3min(180s), return cached Data.
             if(dbCharacterData.length !== 0 && (new Date().getTime()/1000 - dbCharacterData[0]?.insertDt.getTime()/1000) < 5 * 60){
                 //search detail information
                 const responseData = dbCharacterData[0];
-                //search armor Data 
-                const armorData = await this.characterService.getCharacterArmorData(responseData.characterIdx);
-                for(let index = 0 , length = armorData.length ; index++ ; index < length){
-                    const armorIdx = armorData[index].armorIdx;
-                    const armorElixirData = await this.characterService.getCharacterElixirData(armorIdx);
-                    const armorTranscendData = await this.characterService.getCharacterTranscendData(armorIdx);
-                    armorData[index]["elixir"] = armorElixirData;
-                    armorData[index]["transcend"] = armorTranscendData;
-
-                }
-                responseData["armor"] = armorData;
 
 
                 return new ResponseBuilder<Character>()
@@ -48,12 +39,20 @@ export class CharacterController {
             //else, lookup character data and cache in db.
             const characterData = await this.characterService.getCharacterData(characterName);
             //console.log(characterData);
+            const convert = characterData;
+
+            
 
             //cache character Data
+            const mongoClient = await mongoPool.getConnection();
+            const characterDb = mongoClient.db("bot_api").collection("character");
+            const mongoKey = await characterDb.insertOne(convert);
+            console.log(mongoKey)
+            
 
             //serve character information.
-            return new ResponseBuilder<CharacterInfo>()
-                .setBody(characterData)
+            return new ResponseBuilder<Character>()
+                .setBody(convert)
                 .build()
         } catch (error) {
             console.log(error)

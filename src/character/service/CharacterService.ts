@@ -7,13 +7,15 @@ import axios from 'axios';
 import { loaApiUrls } from 'src/constant/urls';
 import { Character, Armor, Elixir, Transcend } from '../model/Character';
 import { CodeService } from 'src/code/service/CodeService';
-import { CommonCode } from 'src/code/model/Code';
+import { CommonCode, CommonCodeWithCode } from 'src/code/model/Code';
 import { get } from 'https';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
 import { cacheItemImage } from 'src/utility/FileUtil';
 import { FileService } from 'src/file/service/FileService';
 import { File } from 'src/file/model/File';
+import { codeCache } from 'src/utility/CodeCache';
+import { mongoDbStruct, mongoPool } from 'src/utility/MongoPool';
 
 @Injectable()
 export class CharacterService {
@@ -23,7 +25,7 @@ export class CharacterService {
         private fileService: FileService
     ){}
 
-    async getCharacterData(username: string): Promise<CharacterInfo>{
+    async getCharacterData(username: string): Promise<Character>{
         return await axios
         .get<CharacterInfo>(`${loaApiUrls.baseUrl}${loaApiUrls.armory}${encodeURI(username)}`, {
             headers: { authorization: `bearer ${this.configService.get("loaApiKey")}` },
@@ -33,75 +35,53 @@ export class CharacterService {
                 throw new Error("캐릭터 정보를 찾을 수 없습니다.");
             }
 
-            const profile = result.data.ArmoryProfile;
-            const characterBody:Character = {
-                name: profile.CharacterName,
-                isMainCharacter: false,
-                class: profile.CharacterClassName,
-                itemLevel: Number(profile.ItemMaxLevel.replaceAll(",", "")),
-                server: profile.ServerName,
-                expeditionLevel: profile.ExpeditionLevel,
-                pvpGradeName: profile.PvpGradeName,
-                townLevel: profile.TownLevel,
-                townName: profile.TownName,
-                toalSkillPoints: profile.TotalSkillPoint,
-                usingSkillPoints: profile.UsingSkillPoint
-            }
+            let apiData = new CharacterInfo();
+            apiData.ArmoryAvatars = result.data.ArmoryAvatars;
+            apiData.ArmoryCard = result.data.ArmoryCard;
+            apiData.ArmoryEngraving = result.data.ArmoryEngraving;
+            apiData.ArmoryEquipment = result.data.ArmoryEquipment;
+            apiData.ArmoryGem = result.data.ArmoryGem;
+            apiData.ArmoryProfile = result.data.ArmoryProfile;
+            apiData.ArmorySkills = result.data.ArmorySkills;
+            apiData.Collectibles = result.data.Collectibles;
+            apiData.ColosseumInfo = result.data.ColosseumInfo;
+            
 
-            const armorCodeList = await this.codeService.findCommonCodeWithConcatedCode({
-                codeGroupIdx: 2
-            } as CommonCode);
 
-            result.data.ArmoryEquipment.forEach((equip)=>{
-                
-                const itemToolTip = JSON.parse(equip.Tooltip);
-                Object.getOwnPropertyNames(itemToolTip).forEach(async (element)=>{
-                    if(itemToolTip[element]["type"] === "ItemTitle"){
-                        //cache item icon image at file service, return image index.
-                        const fileUrl = itemToolTip[element]["value"]["slotData"]["iconPath"] as  string;
-                        const cachedFileData = await cacheItemImage(fileUrl);
-                        console.log(cachedFileData)
-                        const cacheImageDbData = await this.fileService.insertFile({
-                            filePath: cachedFileData.filePath,
-                            fileName: cachedFileData.fileName,
-                            fileExtension: "png",
-                            inputId: "SYSTEM"
-                        })
-                        console.log(cacheImageDbData)
-                        console.log(itemToolTip[element]["value"]["slotData"]["iconPath"] as string)
-                        //save to equipBody
-                        const itemLevelDataList = /<FONT SIZE='14'>아이템 (.{2} )(\d{1,4}).*/mg.exec(itemToolTip[element]["value"]["leftStr2"]);
-                        const equipBody:Armor = {
-                            name: equip.Name,
-                            level:  itemLevelDataList !== null ? Number(itemLevelDataList[2]) : 0,
-                            imgIdx: cacheImageDbData,
-                            equipCode: armorCodeList.find(code=> code.codeValue === equip.Type)?.code
-                        }
-
-                        console.log(equipBody)
+            const codes:CommonCodeWithCode[] = await codeCache.getCode();
+            const characterData = apiData.toCharacter();
+            for(let index = 0, max = characterData.equipList.length ;index < max ; index++){
+                characterData.equipList[index].equipCode = codes.find(code=>{
+                    if(code.codeValue == characterData.equipList[index].equipCode){
+                        return true;
                     }
-                    
-                })
+                }).code;
                 
+                const cachedFileData = await cacheItemImage(characterData.equipList[index].imgUrl);
+                const imgIdx = await this.fileService.insertFile({
+                    filePath: cachedFileData.filePath,
+                    fileName: cachedFileData.fileName,
+                    fileExtension: "png",
+                    inputId: "SYSTEM"
+                })
+                characterData.equipList[index].imgIdx = Number(imgIdx);
+            }
+            characterData.insertDt = new Date();
 
-
-            })
-
-
-
-
-            return result.data;
+            return characterData;
         })
-        /*
         .catch((error)=>{
             console.error(error);
             throw new Error("로스트아크 서비스 점검중입니다.");
         })
-        */
     }
 
     async getCharacterDbData(name:string):Promise<Character[]>{
-        return await tsbatis.select<Character>("character", "selectLatestCharacter", {name});;
+        //get character info from rdbms
+        //return await tsbatis.select<Character>("character", "selectLatestCharacter", {name});;
+
+        //get character info from mongodb
+        return await (await mongoPool.getConnection()).db(mongoDbStruct.dbName).collection(mongoDbStruct.collections.character.name).find<Character>({name}).toArray();
     }
     async getCharacterArmorData(characteridx:number):Promise<Armor[]>{
         return await tsbatis.select<Armor>("character", "selectArmorData", {characteridx});;

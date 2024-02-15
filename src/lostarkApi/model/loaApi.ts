@@ -1,121 +1,125 @@
-export interface SimpleCharacterInfo {
+import { Archivement, Armor, Character, Elixir, Stat, Transcend } from "src/character/model/Character";
+import { cacheItemImage } from "src/utility/FileUtil";
+import { IndentStringGroup, ItemPartBox, TooltipHeader } from "./loaApiEquipTooltips";
+
+export class SimpleCharacterInfo {
     name: string;
     classname: string;
     level: number;
 }
 
-export interface CharacterPerServer {
+export class CharacterPerServer {
     serverName: string;
     characterList: SimpleCharacterInfo[]
 }
 
-export interface CalenderEvent {
+export class CalenderEvent {
     CategoryName: string;
     ContentsName: string;
     ContentsIcon: string;
-    MinItemLevel: number,
-    StartTimes: string[],
+    MinItemLevel: number;
+    StartTimes: string[];
     Location: string;
     RewardItems: RewardItem[]
 }
 
-export interface SimpleIslandEvent {
+export class SimpleIslandEvent {
     name: string;
     startTime: Date[];
     reward: string;
 }
-export interface AbyssGuardians {
+export class AbyssGuardians {
     Raids: {
-        Name: string,
-        Description: string,
-        MinCharacterLevel: number,
-        MinItemLevel: number,
-        RequiredClearRaid: string,
-        StartTime: string,
-        EndTime: string,
+        Name: string;
+        Description: string;
+        MinCharacterLevel: number;
+        MinItemLevel: number;
+        RequiredClearRaid: string;
+        StartTime: string;
+        EndTime: string;
         Image: string
     }[]
-    ,
+    ;
     RewardItems: {
-        ExpeditionItemLevel: number,
+        ExpeditionItemLevel: number;
         Items: RewardItem[]
     }[]
 
 }
 
 
-export interface AbyssDungeons {
-    Name: string,
-    Description: string,
-    MinCharacterLevel: number,
-    MinItemLevel: number,
-    AreaName: string,
-    StartTime: string,
-    EndTime: string,
-    Image: string,
+export class AbyssDungeons {
+    Name: string;
+    Description: string;
+    MinCharacterLevel: number;
+    MinItemLevel: number;
+    AreaName: string;
+    StartTime: string;
+    EndTime: string;
+    Image: string;
     RewardItems: RewardItem[]
 }
 
-export interface RewardItem {
-    Name: string,
-    Icon: string,
-    Grade: string,
+export class RewardItem {
+    Name: string;
+    Icon: string;
+    Grade: string;
     StartTimes: string[]
 }
 
 
-export interface MarketStructure<T> {
+export class MarketStructure<T> {
     
-  PageNo: number,
-  PageSize: number,
-  TotalCount: number,
+  PageNo: number;
+  PageSize: number;
+  TotalCount: number;
   Items: T[]
 }
 
-export interface AuctionItem {
-    Name: string,
-    Grade: string,
-    Tier: number,
-    Level: null,
-    Icon: string,
-    GradeQuality: null,
-    AuctionInfo: AuctionInfo,
-    Options: AuctionOptions[],
+export class AuctionItem {
+    Name: string;
+    Grade: string;
+    Tier: number;
+    Level: null;
+    Icon: string;
+    GradeQuality: null;
+    AuctionInfo: AuctionInfo;
+    Options: AuctionOptions[];
 }
 
-export interface AuctionInfo {
-    StartPrice: number,
-    BuyPrice: number,
-    BidPrice: number,
-    EndDate: string,
-    BidCount: number,
-    BidStartPrice: number,
-    IsCompetitive: boolean,
-    TradeAllowCount: number,
+export class AuctionInfo {
+    StartPrice: number;
+    BuyPrice: number;
+    BidPrice: number;
+    EndDate: string;
+    BidCount: number;
+    BidStartPrice: number;
+    IsCompetitive: boolean;
+    TradeAllowCount: number;
 }
 
-export interface AuctionOptions {
-    Type: string,
-    OptionName: string,
-    OptionNameTripod: string,
-    Value: number,
-    IsPenalty: boolean,
-    ClassName: string,
+export class AuctionOptions {
+    Type: string;
+    OptionName: string;
+    OptionNameTripod: string;
+    Value: number;
+    IsPenalty: boolean;
+    ClassName: string;
 }
 
-export interface MarketItem {
-    Id: number,
-    Name: string,
-    Grade: string,
-    Icon: string,
-    BundleCount: number,
-    TradeRemainCount: number,
-    YDayAvgPrice: number,
-    RecentPrice: number,
+export class MarketItem {
+    Id: number;
+    Name: string;
+    Grade: string;
+    Icon: string;
+    BundleCount: number;
+    TradeRemainCount: number;
+    YDayAvgPrice: number;
+    RecentPrice: number;
     CurrentMinPrice: number
 }
 
-export interface Recipe {
+export class Recipe {
     itemName: string;
     materials: {
         materialName: string;
@@ -124,7 +128,7 @@ export interface Recipe {
 }
 
 
-export interface CharacterInfo {
+export class CharacterInfo {
     ArmoryProfile	: Profile;
 	ArmoryEquipment	: Equipment[];
 	ArmoryAvatars	: Avatar[];
@@ -135,15 +139,140 @@ export interface CharacterInfo {
 	ColosseumInfo	: ColosseumInfo;
 	Collectibles	: Collectible[];
 
+    public toCharacter():Character{
+        
+        const characterData:Character = {
+            name: this.ArmoryProfile.CharacterName,
+            isMainCharacter: false,
+            class: this.ArmoryProfile.CharacterClassName,
+            itemLevel: Number(this.ArmoryProfile.ItemMaxLevel.replace(",", "")),
+            server: this.ArmoryProfile.ServerName,
+            expeditionLevel: this.ArmoryProfile.ExpeditionLevel,
+            pvpGradeName: this.ArmoryProfile.PvpGradeName,
+            townLevel: this.ArmoryProfile.TownLevel,
+            townName: this.ArmoryProfile.TownName,
+            toalSkillPoints: this.ArmoryProfile.TotalSkillPoint,
+            usingSkillPoints: this.ArmoryProfile.UsingSkillPoint,
+
+            archiveList: this.Collectibles.map((collection):Archivement=>{
+                return {
+                    archiveCode: collection.Type,
+                    maxVal: collection.Point,
+                    currentVal: collection.MaxPoint
+                }
+            }),
+            equipList: this.ArmoryEquipment.map((equip):Armor=>{
+                let equipBody:Armor = {
+                    equipCode: "",
+                    level: 0,
+                    name: "",
+                    imgUrl: "",
+                    elixirList: [],
+                    imgIdx: null,
+                    tooltip: "",
+                    transcend: null
+                };
+
+                equipBody.tooltip = equip.Tooltip;
+                equipBody.equipCode = equip.Type;
+                equipBody.name = equip.Name;
+
+                const itemToolTip = JSON.parse(equip.Tooltip);
+                Object.getOwnPropertyNames(itemToolTip).forEach(async (element)=>{
+                    if(itemToolTip[element]["type"] === "ItemTitle"){
+                        const fileUrl = itemToolTip[element]["value"]["slotData"]["iconPath"] as  string;
+                        //save to equipBody
+                        const itemLevelDataList = /<FONT SIZE='14'>아이템 (.{2} )(\d{1,4}).*/mg.exec(itemToolTip[element]["value"]["leftStr2"]);
+                        equipBody.imgUrl = fileUrl;
+                        equipBody.level = itemLevelDataList !== null ? Number(itemLevelDataList[2]) : 0;
+
+                    }
+                })
+
+                const tooltips = JSON.parse(equip.Tooltip) as Record<string, Object>;
+                const elementNames = Object.getOwnPropertyNames(tooltips);
+                //remove unused things from array
+                const itemFooter = elementNames.splice(-6);
+
+
+                let header: Record<string, Object> = {}
+                elementNames.splice(0, 7).forEach((key) => {
+                    let value = tooltips[key];
+                    if (value !== undefined) header[key] = value;
+                });
+
+                //엘릭서, 엘릭서 활성화, 초월
+                elementNames.forEach((key) => {
+                    const etcTooltips = tooltips[key] as IndentStringGroup;
+                    if (etcTooltips.value["Element_000"]?.topStr !== undefined && etcTooltips.value["Element_000"]?.topStr.includes("초월")) {
+                        const targetStr = etcTooltips.value["Element_000"]?.topStr;
+                        const imgRemovedStr = targetStr.replace(/<img.*<\/img>/gmi, "");
+                        const activationCheck = /<font color='#(.{6})'>/i.exec(imgRemovedStr);
+                        if (activationCheck === null) return;
+                        if (activationCheck[1] === '787878') return;
+                        const refinedStr = imgRemovedStr.replace(/<.*?>/ig, "").replace("[초월] ", "");
+
+                        const levelValueExtractor = /(\d)단계 (\d{1,2})/gm.exec(refinedStr);
+                        equipBody.transcend = new Transcend();
+                        equipBody.transcend.stage = Number(levelValueExtractor[1]);
+                        equipBody.transcend.sum = Number(levelValueExtractor[2]);
+
+                    } else if (etcTooltips.value["Element_000"]?.topStr !== undefined && etcTooltips.value["Element_000"]?.topStr.includes("엘릭서")) {
+                        const etcKeyList = Object.getOwnPropertyNames(etcTooltips.value["Element_000"].contentStr);
+
+                        etcKeyList.forEach((etcKey) => {
+                            const targetStr = etcTooltips.value["Element_000"]?.contentStr[etcKey]?.contentStr;
+                            const imgRemovedStr = targetStr?.replace(/<img.*<\/img>/gmi, " ");
+                            if (imgRemovedStr === undefined) return;
+                            const activationCheck = /<font color='#(.{6})'>/i.exec(imgRemovedStr);
+                            if (activationCheck === null) return;
+                            if (activationCheck[1] === '787878') return;
+                            const refinedStr = imgRemovedStr.replace(/<.*?>/ig, " ").replace(/  /ig, " ");
+                            const levelValueExtractor = /\[..\] (.*) (Lv.\d) (.*)/gm.exec(refinedStr);
+                            equipBody.elixirList.push({
+                                name: levelValueExtractor[1],
+                                effect: levelValueExtractor[2] + " " + levelValueExtractor[3]
+                            })
+                        })
+                    }
+                })
+
+                return equipBody;
+            }),
+            guildIdx: null,
+            insertDt: null,
+            statList: this.ArmoryProfile.Tendencies.map((stat):Stat=>{
+                return {
+                    statCode: stat.Type,
+                    value: Number(stat.Point),
+                    addtionalValue: stat.Point,
+                    tooltip: ''
+                }
+            }).concat(this.ArmoryProfile.Stats.map((stat):Stat=>{
+                return {
+                    statCode: stat.Type,
+                    value: Number(stat.Value),
+                    addtionalValue: stat.Value,
+                    tooltip: stat.Tooltip.join()
+                }
+            })),
+            userIdx: null,
+        }
+        
+        
+        
+        return characterData;
+    }
+
 }
-export interface CollectiblePoint {
+export class CollectiblePoint {
     PointName	:	string;
     Point	    :	number;
     MaxPoint	:	number;
 
 }
-export interface Collectible {
-    interface	    :	string;
+export class Collectible {
+    Type	    :	string;
     Icon	    :	string;
     Point	    :	number;
     MaxPoint	:	number;
@@ -151,7 +280,7 @@ export interface Collectible {
 
 }
 
-export interface Coloseum {
+export class Coloseum {
     SeasonName	    :	string | null;
     Competitive	    :	string | null;
     TeamDeathmatch	:	string | null;
@@ -160,7 +289,7 @@ export interface Coloseum {
     CoOpBattle	    :	string | null;
 
 }
-export interface ColosseumInfo {
+export class ColosseumInfo {
     Rank	:	number;
     PreRank	:	number;
     Exp    	:	number;
@@ -168,12 +297,12 @@ export interface ColosseumInfo {
 
 }
 
-export interface EquipGems {
+export class EquipGems {
     Gems: Gem[];
     Effects: GemDescription[];
 }
 
-export interface Gem {
+export class Gem {
     Slot	:	number;
     Name	:	string;
     Icon	:	string;
@@ -182,7 +311,7 @@ export interface Gem {
     Tooltip	:	string;
 }
 
-export interface GemDescription {
+export class GemDescription {
     GemSlot	    :	number;
     Name	    :	string;
     Description	:	string;
@@ -190,13 +319,13 @@ export interface GemDescription {
     Tooltip	    :   string;
 }
 
-export interface Effect {
+export class Effect {
     Index	    : number;
     CardSlots	: number[];
     Items		: NameDescription[];
 
 }
-export interface Card {
+export class Card {
     Slot	    :	number;
     Name	    :	string;
     Icon	    :	string;
@@ -205,44 +334,44 @@ export interface Card {
     Grade	    :	string;
     Tooltip	    :	string;
     }
-export interface cards {
+export class cards {
     Cards : Card [];
     Effects : Effect[];
 }
-export interface NameDescription {
+export class NameDescription {
     Name	    :	string;
     Description	:	string;
 }
-export interface AttachEngrave {
+export class AttachEngrave {
     Slot	: number;
     Name	: string;
     Icon	: string;
     Tooltip	: string;
 }
 
-export interface Engraving {
+export class Engraving {
     Engravings : AttachEngrave[];
     Effects : NameDescription[];
 }
 
-export interface Skill {
+export class Skill {
     Name	: string;
     Icon	: string;
     Level	: number;
-    interface	: string;
+    class	: string;
     IsAwakening	:	boolean
 	Tripods	: Tripod[]
     Rune	: Rune | null
     Tooltip	: string;
 
 }
-export interface Rune {
+export class Rune {
     Name	: string;
     Icon	: string;
     Grade	: string;
     Tooltip	: string;
 }
-export interface Tripod {
+export class Tripod {
     Tier	    : number;
     Slot	    : number;
     Name	    : string;
@@ -252,7 +381,7 @@ export interface Tripod {
     Tooltip	    : string;
 }
 
-export interface Profile {
+export class Profile {
     Stats		        :   TypeValueWithTooltip[];
     Tendencies		    :   TypeValueWithMaxpoint[];
     CharacterImage	    :	string;
@@ -273,19 +402,22 @@ export interface Profile {
     ItemMaxLevel	    :	string;
 
 }
-interface TypeValueWithMaxpoint extends TypeValue {
-    MaxPoint: number    
-}
-interface TypeValueWithTooltip extends TypeValue {
-    Tooltips: string[]
-}
 
-export interface TypeValue {
+
+export class TypeValue {
     Type: string;
     Value: number;
 }
 
-export interface Equipment{
+class TypeValueWithMaxpoint extends TypeValue  {
+    MaxPoint: number; 
+    Point: number;
+}
+class TypeValueWithTooltip extends TypeValue  {
+    Tooltip: string[];
+    Point: number;
+}
+export class Equipment{
     Type	: string;
     Name	: string;
     Icon	: string;
@@ -293,8 +425,8 @@ export interface Equipment{
     Tooltip : string;
 }
 
-export interface Avatar {
-    interface	: string;
+export class Avatar {
+    class	: string;
     Name	: string;
     Icon	: string;
     Grade	: string;

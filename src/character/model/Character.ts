@@ -1,5 +1,4 @@
-export interface Character{
-    characterIdx?: number;
+export class Character{
     userIdx?: number;
     guildIdx?: number;
     name: string;
@@ -14,45 +13,53 @@ export interface Character{
     townName: string;
     toalSkillPoints: number;
     usingSkillPoints: number;
+
+    equipList?: Armor[];
+    archiveList?: Archivement[];
+    statList?: Stat[];
+
 }
 
 
-export interface Archivement{
-    archivementIdx?: number;
-    characterIdx?: number;
+export class Archivement{
     archiveCode: string;
     maxVal: number;
     currentVal: number;
+    tooltip?: string;
 }
 
-export interface Stat{
-    statIdx?: number;
-    characterIdx?: number;
+export class Stat{
     statCode: string;
     value: number;
     addtionalValue: number;
+    tooltip?: string;
 }
 
 
-export interface Armor{
-    armorIdx?: number;
-    characterIdx?: number;
+export class Armor{
     name: string;
     level: number;
+    imgUrl: string;
     imgIdx?: number;
     equipCode: string;
+    elixirList?: Elixir[];
+    transcend?: Transcend;
+    tooltip?: string;
 }
 
-export interface Elixir{
-    armorIdx?: number;
-    elixirIdx?: number;
+export class Elixir{
     name: string;
     effect: string;
+    tooltip?: string;
 }
 
-export interface Transcend{
-    armorIdx?: number;
-    transcendIdx?: number;
+export class Transcend{
     stage: number;
     sum: number;
+    tooltip?: string;
+}
+
+
+export const characterInfo2Charater = ()=>{
+
 }

@@ -1,4 +1,4 @@
-export interface Guild{
+export class Guild{
     guildIdx :number;
     name :string;
     guildIntroduce :string;

@@ -29,7 +29,7 @@ export enum BattleStatCategory{
     Expertise = "숙련",
 }
 
-export interface Accessory{
+export class Accessory{
     grade: GradeCagegory;
     name: string;
     quality: number;
@@ -38,13 +38,13 @@ export interface Accessory{
 
 }
 
-export interface Stat{
+export class Stat{
     name: StatCategory|BasicStatCategory|BattleStatCategory;
     value: number;
 }
 
 
-export interface Engravement{
+export class Engravement{
     engrave: string;
     value: number;
     isNegative: boolean;
